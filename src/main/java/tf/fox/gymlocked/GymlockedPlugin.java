@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
+import net.runelite.api.events.StatChanged;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
@@ -125,25 +126,32 @@ public class GymlockedPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onGameTick(GameTick tick)
+	public void onGameTick(GameTick gameTick) {
+        if (!fetchXp) {
+            return;
+        }
+
+        int currentTotal = calculateTotalXp();
+
+        if (lastTotalXp == 0) {
+            lastTotalXp = currentTotal;
+            persist();
+        } else {
+            int offlineGain = currentTotal - lastTotalXp;
+            if (offlineGain > 0) {
+                availableXp -= offlineGain;
+            }
+            lastTotalXp = currentTotal;
+            persist();
+        }
+
+        fetchXp = false;
+    }
+
+	@Subscribe
+	public void onStatChanged(StatChanged statChanged)
 	{
-		if(fetchXp) {
-			int currentTotal = calculateTotalXp();
-
-			if (lastTotalXp == 0) {
-				lastTotalXp = currentTotal;
-				persist();
-			} else {
-				int offlineGain = currentTotal - lastTotalXp;
-				if (offlineGain > 0) {
-					availableXp -= offlineGain;
-				}
-				lastTotalXp = currentTotal;
-				persist();
-			}
-
-			fetchXp = false;
-		}
+		if(fetchXp) return;
 
 		int currentTotal = calculateTotalXp();
 		int gained = currentTotal - lastTotalXp;

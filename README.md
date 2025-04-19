@@ -14,4 +14,4 @@ Calories (per calorie overage) = -25xp
 Sleeping & waking on time = 50,000xp  
 Meditate (per session) = 25,000xp  
 
-Once you've build up XP IRL you can add them via the plugin and start playing. Game your way towards a healthy life!
+Once you've built up XP IRL you can add them via the plugin and start playing. Game your way towards a healthy life!
