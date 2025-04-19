@@ -1,0 +1,2 @@
+# Gymlocked Tracker
+Tracks XP gained and be able to manually set available XP for special XP locked accounts. Plugin was made for the Gymlocked series found on Youtube https://www.youtube.com/@Lazymaxing
