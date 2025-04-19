@@ -22,8 +22,8 @@ import net.runelite.client.util.ImageUtil;
 @Slf4j
 @PluginDescriptor(
 	name = "Gymlocked Tracker",
-	description = "Track available XP gains based on real-life workouts",
-	tags = {"xp", "workout", "gym"}
+	description = "Tracks XP gained and be able to manually set available XP for special XP locked accounts.",
+	tags = {"xp", "tracker", "gymlocked", "snowflake"}
 )
 public class GymlockedPlugin extends Plugin
 {
