@@ -31,6 +31,8 @@ public class GymlockedPlugin extends Plugin
 	@Getter @Setter private int availableXp;
 	@Getter @Setter private int xpUnlockedTotal;
 	@Getter @Setter private int lastTotalXp;
+	@Getter private String personalNotes;
+	@Getter private int globalModifier;
 
 	@Inject private Client client;
 	@Inject private GymlockedConfig config;
@@ -55,6 +57,8 @@ public class GymlockedPlugin extends Plugin
 		availableXp     = config.availableXp();
 		xpUnlockedTotal = config.xpUnlocked();
 		lastTotalXp     = config.lastTotalXp();
+		personalNotes   = config.personalNotes();
+		globalModifier  = config.globalModifier();
 
 
 		panel = injector.getInstance(GymlockedPanel.class);
@@ -72,14 +76,24 @@ public class GymlockedPlugin extends Plugin
 		overlayManager.add(infoOverlay);
 	}
 
-	private int calculateTotalXp()
+ private int calculateTotalXp()
 	{
 		return Arrays.stream(Skill.values()).mapToInt(client::getSkillExperience).sum();
+	}
+
+	public int calculateTotalLevel()
+	{
+		return Arrays.stream(Skill.values()).mapToInt(client::getRealSkillLevel).sum();
 	}
 
 	@Override
 	protected void shutDown()
 	{
+		// Save personal notes from panel before shutting down
+		if (panel != null) {
+			personalNotes = panel.getPersonalNotes();
+		}
+
 		clientToolbar.removeNavigation(navigationButton);
 		overlayManager.remove(greyOverlay);
 		overlayManager.remove(infoOverlay);
@@ -91,6 +105,8 @@ public class GymlockedPlugin extends Plugin
 		configManager.setConfiguration("gymlocked", "availableXp", availableXp);
 		configManager.setConfiguration("gymlocked", "xpUnlocked", xpUnlockedTotal);
 		configManager.setConfiguration("gymlocked", "lastTotalXp", lastTotalXp);
+		configManager.setConfiguration("gymlocked", "personalNotes", personalNotes);
+		configManager.setConfiguration("gymlocked", "globalModifier", globalModifier);
 	}
 
 	public void addUnlockedXp(int delta)
@@ -103,11 +119,23 @@ public class GymlockedPlugin extends Plugin
 
 	public void resetCounters()
 	{
-		availableXp = 0;
+		availableXp = 10000;
 		xpUnlockedTotal = 0;
 		lastTotalXp = calculateTotalXp();
 		persist();
 		panel.refresh();
+	}
+
+	public void setPersonalNotes(String notes)
+	{
+		personalNotes = notes;
+		persist();
+	}
+
+	public void setGlobalModifier(int modifier)
+	{
+		globalModifier = modifier;
+		persist();
 	}
 
     public boolean shouldGrey()
@@ -157,10 +185,14 @@ public class GymlockedPlugin extends Plugin
 		int gained = currentTotal - lastTotalXp;
 		if (gained > 0)
 		{
+			String currentNotes = panel.getPersonalNotes();
+
 			availableXp -= gained;
 			lastTotalXp  = currentTotal;
 			persist();
 			panel.refresh();
+
+			panel.setPersonalNotes(currentNotes);
 		}
 		else if (gained < 0) // should never happen but handle de‑leveling, etc.
 		{
